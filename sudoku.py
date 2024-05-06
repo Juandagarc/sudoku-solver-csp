@@ -11,6 +11,7 @@ Tipo de busqueda: Heurística.
 #_________________________LIBRERÍAS_________________________#
 import copy
 import itertools
+from colorama import Fore, Style
 #_________________________ESTRUCTURA CSP_________________________#
 class CSP:
     def __init__(self):
@@ -158,34 +159,17 @@ class CSP:
 
     # Restricciones de dominios iguales de 3.
     def SameDomain3(self):
-        for constraint  in self.Constraints['SameDomain3']:
+        for constraint in self.Constraints['SameDomain3']:
             for var_1 in constraint:
-                if(self.numElement(var_1) == 3): # Si  el dominio de la variable es 3, se verifica si hay dominios iguales.
-                    for var_2 in constraint:
-                        if var_1 == var_2: # Si la variable es la misma, se pasa
-                            pass
-                        else:
-                            if(self.Vars[var_1] == self.Vars[var_2]): # Si los dominios son iguales, se eliminan los elementos de las demás variables.
-                                for var_3 in constraint:
-                                    if(var_3 == var_1 or var_3 == var_2): 
-                                        pass
-                                    else:
-                                        if(self.Vars[var_3] == self.Vars[var_1]): 
-                                            lista = list(self.Vars[var_1]) # Se obtienen los valores del dominio.
-                                            val_1 = lista[0]
-                                            val_2 = lista[1]
-                                            val_3 = lista[2]
-                                            for valForDelete in constraint: # Se eliminan los elementos del dominio.
-                                                if(valForDelete == var_1 or valForDelete == var_2 or valForDelete == var_3):
-                                                    pass # Si la variable a eliminar es la misma, se pasa.
-                                                else:
-                                                    lenBefore = len(self.Vars[valForDelete]) # Se obtiene el tamaño del dominio antes de eliminar los elementos.
-                                                    self.Vars[valForDelete].discard(val_1) 
-                                                    self.Vars[valForDelete].discard(val_2)
-                                                    self.Vars[valForDelete].discard(val_3)
-                                                    lenAfter = len(self.Vars[valForDelete])
-                                                    if(lenBefore > lenAfter): # Si el tamaño del dominio disminuyó, se actualiza la variable checkReductions.         
-                                                            self.checkReductions = True # Se actualiza la variable checkReductions.
+                if self.numElement(var_1) == 3:
+                    domain = self.Vars[var_1]
+                    if all(self.Vars[var] == domain for var in constraint if var != var_1):
+                        for varForDelete in constraint:
+                            original_len = len(self.Vars[varForDelete])
+                            self.Vars[varForDelete] -= domain
+                            if len(self.Vars[varForDelete]) < original_len:
+                                self.checkReductions = True
+
 
     # Restricciones de no repetidos.
     def NotRepeated(self):
@@ -326,23 +310,29 @@ while(sudoku.is_solved() == False):
             sudoku = test # Se actualiza el sudoku.
 
 #_________________________IMPRESIÓN DEL SUDOKU_________________________#
+
 def print_sudoku(sudoku):
     colsIndex = "ABCDEFGHI" # Columnas
+    numbers_color = Fore.GREEN
+    letters_color = Fore.BLUE
+    region_color = Fore.RED
 
     print("SUDOKU RESUELTO: ")
-    print("\t"+"+---"*10+"+")
-    print("\t| / | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |")
-    print("\t"+"+---"*10+"+")
+    print("\t" + region_color + "+---" * 10 + "+" + Style.RESET_ALL)
+    print("\t| / | " + letters_color + "A" + Style.RESET_ALL + " | " + letters_color + "B" + Style.RESET_ALL + " | " + letters_color + "C" + Style.RESET_ALL + " | " + letters_color + "D" + Style.RESET_ALL + " | " + letters_color + "E" + Style.RESET_ALL + " | " + letters_color + "F" + Style.RESET_ALL + " | " + letters_color + "G" + Style.RESET_ALL + " | " + letters_color + "H" + Style.RESET_ALL + " | " + letters_color + "I" + Style.RESET_ALL + " |")
+    print("\t" + region_color + "+---" * 10 + "+" + Style.RESET_ALL)
     for i in range(9):
         if i % 3 == 0 and i != 0:
-            print("\t"+"+---"*10+"+")
+            print("\t" + region_color + "+---" * 10 + "+" + Style.RESET_ALL)
         row_values = []
         for j in range(9):
             cell_value = sudoku.Vars[colsIndex[j] + str(i+1)].pop()
             row_values.append(str(cell_value))
             sudoku.Vars[colsIndex[j] + str(i+1)].add(cell_value)
-        print("\t| " + colsIndex[i] + " | " + " | ".join(row_values) + " |")
-    print("\t"+"+---"*10+"+")
+        print("\t| " + numbers_color + str(i+1) + Style.RESET_ALL + " | " + " | ".join(row_values) + " |")
+    print("\t" + region_color + "+---" * 10 + "+" + Style.RESET_ALL)
+
+
 
 print_sudoku(sudoku)
 #_________________________FIN DEL PROGRAMA_________________________#
