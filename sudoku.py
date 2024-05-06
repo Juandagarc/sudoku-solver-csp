@@ -158,78 +158,34 @@ class CSP:
 
     # Restricciones de dominios iguales de 3.
     def SameDomain3(self):
-      for constraint in self.Constraints['SameDomain3']:
-        for var_1 in constraint:
-          if self._has_three_elements(var_1, constraint):
-            domain_values = self.Vars[var_1]
-            if self._all_vars_have_same_domain(domain_values, constraint, var_1):
-              continue
-            self._remove_duplicate_domains(var_1, domain_values, constraint)
-
-    """
-    Verifica si una variable tiene tres elementos en su dominio.
-
-    Args:
-        var: La variable a verificar.
-        constraint: El conjunto de restricciones a considerar.
-
-    Returns:
-        bool: True si la variable tiene tres elementos en su dominio, False en caso contrario.
-    """
-
-    def _has_three_elements(self, var, constraint):
-      return self.numElement(var) == 3
-
-    """
-    Verifica si todas las variables en un conjunto de restricciones tienen los mismos valores de dominio que una variable específica.
-
-    Args:
-        domain_values: Los valores de dominio con los que comparar.
-        constraint: El conjunto de restricciones a considerar.
-        var_1: La variable específica para comparar con otras variables en la restricción.
-
-    Returns:
-        bool: True si todas las variables en la restricción tienen los mismos valores de dominio que var_1, False en caso contrario.
-    """
-    def _all_vars_have_same_domain(self, domain_values, constraint, var_1):
-      return all(self.Vars[var] == domain_values for var in constraint if var != var_1)
-
-    """
-    Elimina valores de dominio de variables en un conjunto de restricciones basado en condiciones específicas.
-
-    Args:
-        var_2: La variable que se compara con var_1.
-        var_1: La variable específica para la comparación.
-        var_3: La variable de la que se eliminan los valores de dominio.
-        domain_values: Los valores de dominio a eliminar.
-
-    Returns:
-        None
-    """
-    def _remove_duplicate_domains(self, var_1, domain_values, constraint):
-        for var_2 in constraint:
-            if var_1 == var_2:
-                continue
-            if self.Vars[var_1] == self.Vars[var_2]:
-                for var_3 in constraint:
-                    if var_3 in [var_1, var_2]:
-                        continue
-                    if self.Vars[var_3] == domain_values:
-                        self._remove_domain_values(var_3, domain_values)
-
-    """
-    Elimina valores de dominio de una variable basado en los valores de dominio proporcionados.
-
-    Args:
-        var: La variable de la que se eliminan los valores de dominio.
-        domain_values: Los valores de dominio a eliminar de la variable.
-
-    Returns:
-        None
-    """
-    def _remove_domain_values(self, var, domain_values):
-        self.Vars[var] -= domain_values
-        self.checkReductions = True
+        for constraint  in self.Constraints['SameDomain3']:
+            for var_1 in constraint:
+                if(self.numElement(var_1) == 3): # Si  el dominio de la variable es 3, se verifica si hay dominios iguales.
+                    for var_2 in constraint:
+                        if var_1 == var_2: # Si la variable es la misma, se pasa
+                            pass
+                        else:
+                            if(self.Vars[var_1] == self.Vars[var_2]): # Si los dominios son iguales, se eliminan los elementos de las demás variables.
+                                for var_3 in constraint:
+                                    if(var_3 == var_1 or var_3 == var_2): 
+                                        pass
+                                    else:
+                                        if(self.Vars[var_3] == self.Vars[var_1]): 
+                                            lista = list(self.Vars[var_1]) # Se obtienen los valores del dominio.
+                                            val_1 = lista[0]
+                                            val_2 = lista[1]
+                                            val_3 = lista[2]
+                                            for valForDelete in constraint: # Se eliminan los elementos del dominio.
+                                                if(valForDelete == var_1 or valForDelete == var_2 or valForDelete == var_3):
+                                                    pass # Si la variable a eliminar es la misma, se pasa.
+                                                else:
+                                                    lenBefore = len(self.Vars[valForDelete]) # Se obtiene el tamaño del dominio antes de eliminar los elementos.
+                                                    self.Vars[valForDelete].discard(val_1) 
+                                                    self.Vars[valForDelete].discard(val_2)
+                                                    self.Vars[valForDelete].discard(val_3)
+                                                    lenAfter = len(self.Vars[valForDelete])
+                                                    if(lenBefore > lenAfter): # Si el tamaño del dominio disminuyó, se actualiza la variable checkReductions.         
+                                                            self.checkReductions = True # Se actualiza la variable checkReductions.
 
     # Restricciones de no repetidos.
     def NotRepeated(self):
