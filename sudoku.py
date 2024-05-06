@@ -83,7 +83,7 @@ class CSP:
 
     '''   RESTRICCIONES DE LAS VARIABLES
 
-          - Itera sobre el rango de números de fila y columnas, creando una lista de variables para cada fila y añadiéndola al diccionario de restricciones bajo la clave dada.
+        - Itera sobre el rango de números de fila y columnas, creando una lista de variables para cada fila y añadiéndola al diccionario de restricciones bajo la clave dada.
     '''
 
     # Restricciones de las filas.
@@ -101,7 +101,7 @@ class CSP:
             self.Constraints[consKey].append(restrictionList)
 
     # Restricciones de las ventanas.
-    def windowConstraints(self, consKey, startRange, endRange):
+    def regionConstraints(self, consKey, startRange, endRange):
         triplets = ["ABC", "DEF", "GHI"]
         for t in triplets:
             restrictionList = []
@@ -117,7 +117,7 @@ class CSP:
         startRange = [1, 4, 7]
         endRange = [4, 7, 10]
         for index in range(3):
-            self.windowConstraints(consKey, int(startRange[index]), int(endRange[index]))
+            self.regionConstraints(consKey, int(startRange[index]), int(endRange[index]))
 
     '''
     Restricciones de diferencias:
