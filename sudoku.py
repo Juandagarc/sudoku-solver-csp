@@ -1,23 +1,73 @@
 '''
-Fecha: 06/05/2024
-
 Integrantes:  - Juan David García Arce
               - Adrian Fernando Gaitán
               - Maximiliano Giraldo Ocampo
 
-Tipo de busqueda: Deep first search.
+Tipo de busqueda: Depth first search.
 '''
 
 #_________________________LIBRERÍAS_________________________#
 import copy
 import itertools
 from colorama import Fore, Style
+
+import tkinter as tk
+
+def visualize_sudoku(sudoku):
+    colsIndex = "ABCDEFGHI"  # Columnas
+    root = tk.Tk()
+    root.title("Sudoku Resuelto")
+
+    # Title
+    title_label = tk.Label(root, text="Sudoku Resuelto", font=("Arial", 16, "bold"))
+    title_label.grid(row=0, column=0, columnspan=10, pady=(10, 5))
+
+    # Sudoku grid
+    for i in range(9):
+        for j in range(9):
+            cell_value = sudoku.Vars[colsIndex[j] + str(i + 1)].pop()
+            sudoku.Vars[colsIndex[j] + str(i + 1)].add(cell_value)
+
+            # Add thicker lines to mark regions
+            border_width = 1
+            if i % 3 == 0 and i != 0:
+                border_width = 2
+            if j % 3 == 0 and j != 0:
+                border_width = 2
+
+            label = tk.Label(root, text=str(cell_value), width=4, height=2, relief="solid", font=("Arial", 16),
+                             borderwidth=border_width)
+            label.grid(row=i + 2, column=j + 1, padx=1, pady=1)
+
+    # Region labels
+    for i in range(9):
+        label = tk.Label(root, text=colsIndex[i], width=4, height=2, font=("Arial", 10))
+        label.grid(row=1, column=i + 1, padx=1, pady=1)
+        label = tk.Label(root, text=str(i + 1), width=4, height=2, font=("Arial", 10))
+        label.grid(row=i + 2, column=0, padx=1, pady=1)
+
+    # Author's details
+    team_details = [
+        "Authors:",
+        "   - Adrian Fernando Gaitán",
+        "   - Juan David García Arce",
+        "   - Maximiliano Giraldo Ocampo"
+    ]
+
+    # Display author's details
+    for index, detail in enumerate(team_details):
+        team_info_label = tk.Label(root, text=detail, font=("Arial", 12))
+        team_info_label.grid(row=12 + index, column=0, columnspan=10, sticky='w')
+
+    root.mainloop()
+
 #_________________________ESTRUCTURA CSP_________________________#
 class CSP:
     def __init__(self):
         self.Vars = {}  # Variables.
         self.Constraints={'Dif':[], 'SameDomain2': [], 'SameDomain3': [], 'NotRepeated': []}  # Restricciones.
         self.checkReductions = False # Booleano de verificación de reducciones.
+        self.counterLoop = 0 # Limite de pruebas con depth first search
 
     '''DOMINIOS DE LAS VARIABLES'''
 
@@ -224,6 +274,14 @@ class CSP:
         return len(self.Vars[key])
 
     """
+    Detect break memory
+    """
+    def detectBreak(self):
+        if (self.counterLoop == 12):
+            print("No se pudo resolver")
+            return True
+
+    """
     Procesa las restricciones para verificar la consistencia y aplicar operaciones específicas.
 
     Returns:
@@ -282,36 +340,19 @@ class CSP:
                     break
             if break_outer_loop: # Se verifica si se realizó alguna eliminación en el dominio de las variables. 
                 break
-
+        if(c == "I" and i == 9):
+            self.counterLoop += 1
         if(break_outer_loop): # Se verifica si se realizó alguna eliminación en el dominio de las variables.
-            print("Element: ", element)
             while(self.loopThroughConstraint()):
-                pass
+               pass
             if (self.localConsistent() == False):
                 sudoku.Vars[str(c) + str(i)] = {element} # Se actualiza la variable.
                 return False
             else:
                 return True
+        else:
+            return("No tiene solucion")
 
-#_________________________SUDOKU_________________________#
-sudoku = CSP() # Se crea el objeto CSP.
-sudoku.Vars_Doms()
-sudoku.initBoard("solve.txt") # Se inicializa el tablero de Sudoku.
-sudoku.constraintStructures('Dif')
-sudoku.constraintStructures('SameDomain2')
-sudoku.constraintStructures('SameDomain3')
-sudoku.constraintStructures('NotRepeated')
-
-# Se resuelve el sudoku.
-while(sudoku.is_solved() == False):
-    while(sudoku.loopThroughConstraint()):
-        pass
-    if sudoku.is_solved() == False:
-        test = sudoku.copy() # Se copia el objeto.
-        if test.backTracking(sudoku) != False:
-            sudoku = test # Se actualiza el sudoku.
-
-#_________________________IMPRESIÓN DEL SUDOKU_________________________#
 
 def print_sudoku(sudoku):
     colsIndex = "ABCDEFGHI" # Columnas
@@ -335,6 +376,31 @@ def print_sudoku(sudoku):
     print("\t" + region_color + "+---" * 10 + "+" + Style.RESET_ALL)
 
 
+#_________________________SUDOKU_________________________#
+sudoku = CSP() # Se crea el objeto CSP.
+sudoku.Vars_Doms()
+sudoku.initBoard("board") # Se inicializa el tablero de Sudoku.
+sudoku.constraintStructures('Dif')
+sudoku.constraintStructures('SameDomain2')
+sudoku.constraintStructures('SameDomain3')
+sudoku.constraintStructures('NotRepeated')
 
-print_sudoku(sudoku)
+# Se resuelve el sudoku.
+while(sudoku.is_solved() == False):
+    breakMemory = sudoku.detectBreak() #Detect memory break
+    while(sudoku.loopThroughConstraint()):
+        if (breakMemory):
+            break
+        pass
+    if (breakMemory):
+        break
+    if sudoku.is_solved() == False:
+        test = sudoku.copy() # Se copia el objeto.
+        if test.backTracking(sudoku) != False:
+            sudoku = test # Se actualiza el sudoku.
+
+#_________________________IMPRESIÓN DEL SUDOKU_________________________#
+if (not(breakMemory)):
+    print_sudoku(sudoku)
+    visualize_sudoku(sudoku)
 #_________________________FIN DEL PROGRAMA_________________________#
