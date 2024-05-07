@@ -5,7 +5,7 @@ Integrantes:  - Juan David García Arce
               - Adrian Fernando Gaitán
               - Maximiliano Giraldo Ocampo
 
-Tipo de busqueda: Heurística.
+Tipo de busqueda: Deep first search.
 '''
 
 #_________________________LIBRERÍAS_________________________#
@@ -273,6 +273,7 @@ class CSP:
         break_outer_loop = False # Variable que nos indica si se realizó alguna eliminación en el dominio de las variables.
         for c in colsIndex:
             for i in range(1,10):
+                print(f"Variable: {c}{i}")
                 if (len(self.Vars[str(c) + str(i)]) == 2):
                     lista = list(self.Vars[str(c) + str(i)])
                     element = lista[0]
@@ -283,6 +284,7 @@ class CSP:
                 break
 
         if(break_outer_loop): # Se verifica si se realizó alguna eliminación en el dominio de las variables.
+            print("Element: ", element)
             while(self.loopThroughConstraint()):
                 pass
             if (self.localConsistent() == False):
